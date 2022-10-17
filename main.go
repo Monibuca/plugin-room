@@ -163,13 +163,14 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() {
 		user.Stop()
-		data, _ := json.Marshal(map[string]any{"event": "userleave", "data": userId})
-		room.track.Push(data)
 		conn.Close()
 		room.Users.Delete(userId)
+		Rooms.Lock()
+		defer Rooms.Unlock()
 		if room.Users.Len() == 0 {
 			room.track.Dispose()
 			room.Stop()
+			delete(Rooms.Map, roomId)
 		}
 	}()
 	for {

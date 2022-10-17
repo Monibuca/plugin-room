@@ -40,6 +40,9 @@ room:
 通过WebSocket建立与本插件的连接，规则如下：
 - `ws://localhost:8080/room/[roomID]/[userID]` 建立连接,如果是私密房间，需要携带密码（?password=xxx)
 - 连接建立后，客户端接收到`{"data":"4f8990a1-e7ae-4926-81b0-a3ab191c8e3b","event":"joined"}`代表进房成功，data是token用于发布流时的参数
+   - 进房成功后，客户端会收到`{"data":[{"ID":"xxx","StreamPath":"xxx"}],"event":"userlist"}`用户列表
+   - 当有用户进房，客户端会收到`{"data":{"ID":"xxx","StreamPath":"xxx"},"event":"userjoin"}`用户进房通知，data是用户信息
+   - 当有用户离房，客户端会收到`{"userId":xxx,"event":"userleave"}`用户离房通知,userId代表离房的用户ID
+   - 当有用户发布流的时候，房间内其他人会收到事件：`{"data":"[streamPath]","event":"publish","userId":"dexter"}`,用户可以选择订阅这个流
 - 进房后，可以通过WebSocket发送任意文本数据，该数据会被广播到房间内的其他用户(包括自己)，格式：`{"data":"abc","event":"msg","userId":"dexter"}`
 - 在房间里面可以发布视频流，发布流的时候需要在StreamPath后面携带三个参数userId,roomId,token。
-- 当有用户发布流的时候，房间内其他人会收到事件：`{"data":"[streamPath]","event":"publish","userId":"dexter"}`,用户可以选择订阅这个流
