@@ -155,11 +155,10 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	user.ID = userId
 	user.Send("joined", token)
 	user.Send("userlist", room.Users.ToList())
-	data, _ := json.Marshal(map[string]any{"event": "userjoin", "data": user})
-	room.track.Push(data)
-	room.Users.Add(userId, user)
-	if plugin.Subscribe(rc.AppName+"/"+room.ID, user) == nil {
-
+	if err = plugin.Subscribe(rc.AppName+"/"+room.ID, user); err == nil {
+		data, _ := json.Marshal(map[string]any{"event": "userjoin", "data": user})
+		room.track.Push(data)
+		room.Users.Add(userId, user)
 	}
 	defer func() {
 		user.Stop()
