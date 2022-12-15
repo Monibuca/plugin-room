@@ -78,7 +78,7 @@ var plugin = InstallPlugin(&RoomConfig{
 func (rc *RoomConfig) OnEvent(event any) {
 	switch v := event.(type) {
 	case SEpublish:
-		args := v.Stream.Publisher.GetIO().Args
+		args := v.Stream.Publisher.GetPublisher().Args
 		roomId := args.Get("roomId")
 		userId := args.Get("userId")
 		token := args.Get("token")
