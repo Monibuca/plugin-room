@@ -1,6 +1,7 @@
 package room // import "m7s.live/plugin/room/v4"
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 	"strings"
@@ -79,9 +80,13 @@ func (rc *RoomConfig) OnEvent(event any) {
 	switch v := event.(type) {
 	case SEpublish:
 		args := v.Stream.Publisher.GetPublisher().Args
-		roomId := args.Get("roomId")
-		userId := args.Get("userId")
 		token := args.Get("token")
+		ss := strings.Split(token, ":")
+		if len(ss) != 3 {
+			return
+		}
+		roomId := ss[0]
+		userId := ss[1]
 		if roomId != "" && Rooms.Has(roomId) {
 			room := Rooms.Get(roomId)
 			if room.Users.Has(userId) {
@@ -99,7 +104,6 @@ func (rc *RoomConfig) OnEvent(event any) {
 func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ss := strings.Split(r.URL.Path, "/")[2:]
 	var roomId, userId, token string
-	token = uuid.NewString()
 	if len(ss) == 2 {
 		roomId = ss[0]
 		userId = ss[1]
@@ -150,6 +154,7 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	token = fmt.Sprintf("%s:%s:%s", roomId, userId, uuid.NewString())
 	user := &User{Room: room, Conn: conn, Token: token}
 	user.ID = userId
 	user.Send("joined", token)

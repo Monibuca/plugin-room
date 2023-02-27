@@ -45,4 +45,4 @@ room:
    - 当有用户离房，客户端会收到`{"userId":xxx,"event":"userleave"}`用户离房通知,userId代表离房的用户ID
    - 当有用户发布流的时候，房间内其他人会收到事件：`{"data":"[streamPath]","event":"publish","userId":"dexter"}`,用户可以选择订阅这个流
 - 进房后，可以通过WebSocket发送任意文本数据，该数据会被广播到房间内的其他用户(包括自己)，格式：`{"data":"abc","event":"msg","userId":"dexter"}`
-- 在房间里面可以发布视频流，发布流的时候需要在StreamPath后面携带三个参数userId,roomId,token。
+- 在房间里面可以发布视频流，发布流的时候需要在StreamPath后面携带参数token。
