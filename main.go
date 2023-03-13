@@ -1,5 +1,6 @@
 package room // import "m7s.live/plugin/room/v4"
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -58,10 +59,15 @@ type Room struct {
 
 var Rooms = util.Map[string, *Room]{Map: make(map[string]*Room)}
 
+//go:embed default.yaml
+var defaultYaml DefaultYaml
+
 type RoomConfig struct {
+	DefaultYaml
+	config.Subscribe
 	config.HTTP
-	AppName string
-	Size    int               //房间大小
+	AppName string            `default:"room"`
+	Size    int               `default:"20"` //房间大小
 	Private map[string]string //私密房间 key房间号，value密码
 	Verify  struct {
 		URL    string
@@ -72,8 +78,7 @@ type RoomConfig struct {
 }
 
 var plugin = InstallPlugin(&RoomConfig{
-	Size:    20,
-	AppName: "room",
+	DefaultYaml: defaultYaml,
 })
 
 func (rc *RoomConfig) OnEvent(event any) {
@@ -154,28 +159,27 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	defer conn.Close()
 	token = fmt.Sprintf("%s:%s:%s", roomId, userId, uuid.NewString())
 	user := &User{Room: room, Conn: conn, Token: token}
 	user.ID = userId
-	user.Send("joined", token)
-	user.Send("userlist", room.Users.ToList())
 	if err = plugin.Subscribe(rc.AppName+"/"+room.ID, user); err == nil {
 		data, _ := json.Marshal(map[string]any{"event": "userjoin", "data": user})
 		room.track.Push(data)
 		room.Users.Add(userId, user)
+		user.Send("joined", map[string]any{"token": token, "userList": room.Users.ToList()})
+		defer func() {
+			user.Stop()
+			room.Users.Delete(userId)
+			if room.Users.Len() == 0 {
+				room.track.Dispose()
+				room.Stop()
+				Rooms.Delete(roomId)
+			}
+		}()
+	} else {
+		return
 	}
-	defer func() {
-		user.Stop()
-		conn.Close()
-		room.Users.Delete(userId)
-		Rooms.Lock()
-		defer Rooms.Unlock()
-		if room.Users.Len() == 0 {
-			room.track.Dispose()
-			room.Stop()
-			delete(Rooms.Map, roomId)
-		}
-	}()
 	for {
 		msg, op, err := wsutil.ReadClientData(conn)
 		if op == ws.OpClose || err != nil {

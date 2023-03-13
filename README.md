@@ -18,6 +18,9 @@ https://github.com/Monibuca/plugin-room
 
 ```yaml
 room:
+  subscribe: # 房间作为特殊流，只订阅data track用于传输信令
+    subaudio: false # 默认不订阅音频
+    subvideo: false # 默认不订阅视频
   http: # 默认使用全局http配置
     listenaddr: :8080
     listenaddrtls: ""
@@ -39,8 +42,7 @@ room:
 
 通过WebSocket建立与本插件的连接，规则如下：
 - `ws://localhost:8080/room/[roomID]/[userID]` 建立连接,如果是私密房间，需要携带密码（?password=xxx)
-- 连接建立后，客户端接收到`{"data":"4f8990a1-e7ae-4926-81b0-a3ab191c8e3b","event":"joined"}`代表进房成功，data是token用于发布流时的参数
-   - 进房成功后，客户端会收到`{"data":[{"ID":"xxx","StreamPath":"xxx"}],"event":"userlist"}`用户列表
+- 连接建立后，客户端接收到`{"data":{"token":"4f8990a1-e7ae-4926-81b0-a3ab191c8e3b","userList":[]},"event":"joined"}`代表进房成功，token用于发布流时的参数
    - 当有用户进房，客户端会收到`{"data":{"ID":"xxx","StreamPath":"xxx"},"event":"userjoin"}`用户进房通知，data是用户信息
    - 当有用户离房，客户端会收到`{"userId":xxx,"event":"userleave"}`用户离房通知,userId代表离房的用户ID
    - 当有用户发布流的时候，房间内其他人会收到事件：`{"data":"[streamPath]","event":"publish","userId":"dexter"}`,用户可以选择订阅这个流
