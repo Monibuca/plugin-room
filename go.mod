@@ -5,12 +5,14 @@ go 1.19
 require (
 	github.com/gobwas/ws v1.1.0
 	github.com/google/uuid v1.3.0
-	m7s.live/engine/v4 v4.11.15
+	m7s.live/engine/v4 v4.11.18
 )
 
 require (
+	github.com/aler9/gortsplib v1.0.1 // indirect
 	github.com/aler9/gortsplib/v2 v2.1.4 // indirect
 	github.com/cnotch/ipchub v1.1.0 // indirect
+	github.com/denisbrodbeck/machineid v1.0.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect

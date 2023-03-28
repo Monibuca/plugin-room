@@ -84,7 +84,7 @@ var plugin = InstallPlugin(&RoomConfig{
 func (rc *RoomConfig) OnEvent(event any) {
 	switch v := event.(type) {
 	case SEpublish:
-		args := v.Stream.Publisher.GetPublisher().Args
+		args := v.Target.Publisher.GetPublisher().Args
 		token := args.Get("token")
 		ss := strings.Split(token, ":")
 		if len(ss) != 3 {
@@ -97,8 +97,8 @@ func (rc *RoomConfig) OnEvent(event any) {
 			if room.Users.Has(userId) {
 				user := room.Users.Get(userId)
 				if user.Token == token {
-					user.StreamPath = v.Stream.Path
-					data, _ := json.Marshal(map[string]any{"event": "publish", "data": v.Stream.Path, "userId": user.ID})
+					user.StreamPath = v.Target.Path
+					data, _ := json.Marshal(map[string]any{"event": "publish", "data": v.Target.Path, "userId": user.ID})
 					room.track.Push(data)
 				}
 			}
