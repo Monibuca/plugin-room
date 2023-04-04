@@ -107,7 +107,7 @@ func (rc *RoomConfig) OnEvent(event any) {
 }
 
 func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ss := strings.Split(r.URL.Path, "/")[2:]
+	ss := strings.Split(r.URL.Path, "/")[1:]
 	var roomId, userId, token string
 	if len(ss) == 2 {
 		roomId = ss[0]
