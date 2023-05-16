@@ -21,20 +21,19 @@ import (
 type User struct {
 	Subscriber
 	StreamPath string
-	Token      string `json:"-"`
-	Room       *Room  `json:"-"`
-	net.Conn   `json:"-"`
+	Token      string `json:"-" yaml:"-"`
+	Room       *Room  `json:"-" yaml:"-"`
+	net.Conn   `json:"-" yaml:"-"`
 	writeLock  sync.Mutex
 }
 
 func (u *User) OnEvent(event any) {
 	switch v := event.(type) {
-	case *track.Data:
-		u.AddTrack(v)
-		go v.Play(u.IO, func(data any) error {
+	case *track.Data[[]byte]:
+		go v.Play(u.IO, func(data *common.DataFrame[[]byte]) error {
 			u.writeLock.Lock()
 			defer u.writeLock.Unlock()
-			return wsutil.WriteServerText(u.Conn, data.(*common.DataFrame[any]).Value.([]byte))
+			return wsutil.WriteServerText(u.Conn, data.Value)
 		})
 	default:
 		u.Subscriber.OnEvent(event)
@@ -52,9 +51,9 @@ func (u *User) Send(event string, data any) {
 }
 
 type Room struct {
-	Publisher `json:"-"`
+	Publisher `json:"-" yaml:"-"`
 	Users     util.Map[string, *User]
-	track     *track.Data
+	track     *track.Data[[]byte]
 }
 
 var Rooms = util.Map[string, *Room]{Map: make(map[string]*Room)}
@@ -141,8 +140,9 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		room.ID = roomId
 		if plugin.Publish(rc.AppName+"/"+roomId, room) == nil {
 			Rooms.Add(roomId, room)
-			room.track = room.Stream.NewDataTrack("data", &sync.Mutex{})
-			room.track.Attach()
+			room.track = track.NewDataTrack[[]byte]("data")
+			room.track.Locker = &sync.Mutex{}
+			room.track.Attach(room.Stream)
 		} else {
 			http.Error(w, "room already exist", http.StatusBadRequest)
 			return

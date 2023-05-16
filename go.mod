@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/gobwas/ws v1.1.0
 	github.com/google/uuid v1.3.0
-	m7s.live/engine/v4 v4.12.0
+	m7s.live/engine/v4 v4.12.9
 )
 
 require (
@@ -34,7 +34,7 @@ require (
 	github.com/shirou/gopsutil/v3 v3.22.10 // indirect
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
 	github.com/tklauser/numcpus v0.6.0 // indirect
-	github.com/yapingcat/gomedia v0.0.0-20230222121919-c67df405bf33 // indirect
+	github.com/yapingcat/gomedia v0.0.0-20230426092936-387031404274 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
