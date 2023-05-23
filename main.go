@@ -56,7 +56,7 @@ type Room struct {
 	track     *track.Data[[]byte]
 }
 
-var Rooms = util.Map[string, *Room]{Map: make(map[string]*Room)}
+var Rooms util.Map[string, *Room]
 
 //go:embed default.yaml
 var defaultYaml DefaultYaml
@@ -136,7 +136,7 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	var room *Room
 	if !Rooms.Has(roomId) {
-		room = &Room{Users: util.Map[string, *User]{Map: make(map[string]*User)}}
+		room = &Room{}
 		room.ID = roomId
 		if plugin.Publish(rc.AppName+"/"+roomId, room) == nil {
 			Rooms.Add(roomId, room)
