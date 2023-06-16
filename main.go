@@ -33,7 +33,7 @@ func (u *User) OnEvent(event any) {
 		go v.Play(u.IO, func(data *common.DataFrame[[]byte]) error {
 			u.writeLock.Lock()
 			defer u.writeLock.Unlock()
-			return wsutil.WriteServerText(u.Conn, data.Value)
+			return wsutil.WriteServerText(u.Conn, data.Data)
 		})
 	default:
 		u.Subscriber.OnEvent(event)

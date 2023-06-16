@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/gobwas/ws v1.1.0
 	github.com/google/uuid v1.3.0
-	m7s.live/engine/v4 v4.12.9
+	m7s.live/engine/v4 v4.13.3
 )
 
 require (
