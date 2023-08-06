@@ -11,6 +11,7 @@ import (
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	. "m7s.live/engine/v4"
 	"m7s.live/engine/v4/common"
 	"m7s.live/engine/v4/config"
@@ -169,7 +170,7 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		room.Users.Add(userId, user)
 		user.Send("joined", map[string]any{"token": token, "userList": room.Users.ToList()})
 		defer func() {
-			user.Stop()
+			user.Stop(zap.Error(err))
 			room.Users.Delete(userId)
 			if room.Users.Len() == 0 {
 				room.track.Dispose()
@@ -180,8 +181,10 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		return
 	}
+	var msg []byte
+	var op ws.OpCode
 	for {
-		msg, op, err := wsutil.ReadClientData(conn)
+		msg, op, err = wsutil.ReadClientData(conn)
 		if op == ws.OpClose || err != nil {
 			data, _ := json.Marshal(map[string]any{"event": "userleave", "userId": userId})
 			room.track.Push(data)
