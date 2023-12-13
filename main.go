@@ -63,23 +63,20 @@ var Rooms util.Map[string, *Room]
 var defaultYaml DefaultYaml
 
 type RoomConfig struct {
-	DefaultYaml
 	config.Subscribe
 	config.HTTP
-	AppName string            `default:"room"`
-	Size    int               `default:"20"` //房间大小
-	Private map[string]string //私密房间 key房间号，value密码
+	AppName string            `default:"room" desc:"用于订阅房间消息的应用名（streamPath第一段）"`
+	Size    int               `default:"20" desc:"房间大小"`         //房间大小
+	Private map[string]string `desc:"私密房间" key:"房间号" value:"密码"` //私密房间 key房间号，value密码
 	Verify  struct {
-		URL    string
-		Method string
-		Header map[string]string
-	}
+		URL    string            `desc:"验证用户身份的URL"`
+		Method string            `desc:"验证用户身份的HTTP方法"`
+		Header map[string]string `desc:"验证用户身份的HTTP头" key:"名称" value:"值"`
+	} `desc:"验证用户身份"`
 	lock sync.RWMutex
 }
 
-var plugin = InstallPlugin(&RoomConfig{
-	DefaultYaml: defaultYaml,
-})
+var plugin = InstallPlugin(&RoomConfig{}, defaultYaml)
 
 func (rc *RoomConfig) OnEvent(event any) {
 	switch v := event.(type) {
