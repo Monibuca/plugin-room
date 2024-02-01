@@ -161,7 +161,7 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token = fmt.Sprintf("%s:%s:%s", roomId, userId, uuid.NewString())
 	user := &User{Room: room, Conn: conn, Token: token}
 	user.ID = userId
-	if err = plugin.Subscribe(rc.AppName+"/"+room.ID, user); err == nil {
+	if err = plugin.Subscribe(rc.AppName+"/"+room.ID+util.Conditoinal(r.URL.RawQuery == "", "", "?"+r.URL.RawQuery), user); err == nil {
 		data, _ := json.Marshal(map[string]any{"event": "userjoin", "data": user})
 		room.track.Push(data)
 		room.Users.Add(userId, user)
