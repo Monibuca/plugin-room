@@ -91,13 +91,19 @@ func (rc *RoomConfig) OnEvent(event any) {
 		}
 		roomId := ss[0]
 		userId := ss[1]
+
 		if roomId != "" && Rooms.Has(roomId) {
 			room := Rooms.Get(roomId)
 			if room.Users.Has(userId) {
 				user := room.Users.Get(userId)
+				fmt.Println("roomid is", roomId)
+				fmt.Println("userId is", userId)
+				fmt.Println(" v.Target.Path is", v.Target.Path)
+				fmt.Println("post token is", token)
+				fmt.Println("user token is", user.Token)
 				if user.Token == token {
 					user.StreamPath = v.Target.Path
-					data, _ := json.Marshal(map[string]any{"event": "publish", "data": v.Target.Path, "userId": user.ID})
+					data, _ := json.Marshal(map[string]any{"event": "publish", "data": user, "userId": user.ID})
 					room.track.Push(data)
 				}
 			}
@@ -191,7 +197,8 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			room.track.Push(data)
 		}
 		if op == ws.OpClose || err != nil {
-			data, _ := json.Marshal(map[string]any{"event": "userleave", "userId": userId})
+			fmt.Println("ws closed")
+			data, _ := json.Marshal(map[string]any{"event": "userleave", "userId": userId, "data": user})
 			room.track.Push(data)
 			return
 		}
