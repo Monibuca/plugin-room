@@ -74,6 +74,8 @@ type RoomConfig struct {
 		Header map[string]string `desc:"验证用户身份的HTTP头" key:"名称" value:"值"`
 	} `desc:"验证用户身份"`
 	lock sync.RWMutex
+	Ping string `default:"ping" desc:"用于客户端与服务器保持心跳时客户端发送的特殊字符串"`
+	Pong string `default:"pong" desc:"用于客户端与服务器保持心跳时服务器响应的特殊字符串"`
 }
 
 var plugin = InstallPlugin(&RoomConfig{}, defaultYaml)
@@ -182,12 +184,16 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var op ws.OpCode
 	for {
 		msg, op, err = wsutil.ReadClientData(conn)
+		if string(msg) == rc.Ping {
+			wsutil.WriteServerText(conn, []byte(rc.Pong))
+		} else {
+			data, _ := json.Marshal(map[string]any{"event": "msg", "data": string(msg), "userId": userId})
+			room.track.Push(data)
+		}
 		if op == ws.OpClose || err != nil {
 			data, _ := json.Marshal(map[string]any{"event": "userleave", "userId": userId})
 			room.track.Push(data)
 			return
 		}
-		data, _ := json.Marshal(map[string]any{"event": "msg", "data": string(msg), "userId": userId})
-		room.track.Push(data)
 	}
 }
