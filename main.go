@@ -140,9 +140,14 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		room.ID = roomId
 		if plugin.Publish(rc.AppName+"/"+roomId, room) == nil {
 			Rooms.Add(roomId, room)
-			room.track = track.NewDataTrack[[]byte]("data")
-			room.track.Locker = &sync.Mutex{}
-			room.track.Attach(room.Stream)
+			if actual, loaded := room.Stream.Tracks.Map.Load("data"); !loaded {
+				room.track = track.NewDataTrack[[]byte]("data")
+				room.track.Locker = &sync.Mutex{}
+				room.track.Attach(room.Stream)
+			} else {
+				room.track = actual.(*track.Data[[]byte])
+				room.track.SetStuff(room)
+			}
 		} else {
 			http.Error(w, "room already exist", http.StatusBadRequest)
 			return
