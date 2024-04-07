@@ -141,7 +141,9 @@ func (rc *RoomConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if plugin.Publish(rc.AppName+"/"+roomId, room) == nil {
 			Rooms.Add(roomId, room)
 			if actual, loaded := room.Stream.Tracks.Map.Load("data"); !loaded {
-				room.track = track.NewDataTrack[[]byte]("data")
+				room.track = &track.Data[[]byte]{}
+				room.track.Init(100)
+				room.track.SetStuff("data")
 				room.track.Locker = &sync.Mutex{}
 				room.track.Attach(room.Stream)
 			} else {
